@@ -429,7 +429,7 @@
             const row = `<tr><td>${receipt}</td><td>${name}</td><td>${amount}</td><td><span class="badge bg-success">تم الحفظ</span></td></tr>`;
             tbody.innerHTML += row;
 
-            // تحديث لوحة الأدمن (محاكاة)
+            // تحديث  لوحة الأدمن (محاكاة)
             const adminTbody = document.getElementById('admin-table-body');
             const adminRow = `<tr><td>أنت (مخول)</td><td>${name}</td><td>${amount}</td><td>${new Date().toLocaleDateString()}</td><td>${receipt}</td><td><button class="btn btn-sm btn-info">تفاصيل</button></td></tr>`;
             adminTbody.innerHTML += adminRow;
