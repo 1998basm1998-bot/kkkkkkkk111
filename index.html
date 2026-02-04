@@ -3,80 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة التبرعات الخيرية</title>
+    <title>البنيان المرصوص بغداد الرصافه</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-    <style>
-        :root {
-            --primary: #10b981; /* لون أخضر خيري */
-            --dark: #064e3b;
-            --light: #ecfdf5;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --text: #1f2937;
-            --bg: #f3f4f6;
-        }
-
-        * { box-sizing: border-box; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; }
-        body { background-color: var(--bg); color: var(--text); padding-bottom: 50px; }
-
-        /* تنسيقات عامة */
-        .container { max-width: 1200px; margin: 0 auto; padding: 15px; }
-        .hidden { display: none !important; }
-        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .btn { cursor: pointer; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-warning { background: var(--warning); color: black; }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
-        .form-control { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; }
-        .form-control:focus { outline: 2px solid var(--primary); border-color: transparent; }
-
-        /* شاشة الدخول */
-        #login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--dark), var(--primary)); }
-        .login-box { width: 100%; max-width: 400px; background: white; padding: 30px; border-radius: 20px; text-align: center; }
-
-        /* الجداول */
-        .table-responsive { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 800px; }
-        th, td { padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb; }
-        th { background-color: var(--light); color: var(--dark); }
-
-        /* الإحصائيات */
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: white; padding: 20px; border-radius: 10px; border-right: 4px solid var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .stat-value { font-size: 24px; font-weight: bold; color: var(--dark); }
-        .stat-label { color: #6b7280; font-size: 14px; }
-
-        /* Navbar */
-        .navbar { background: white; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-        .logo { font-weight: bold; color: var(--primary); font-size: 1.2rem; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div id="login-screen">
         <div class="login-box">
-            <h2 style="margin-bottom: 20px; color: var(--dark);">بوابة المؤسسة الخيرية</h2>
+            <h2 style="margin-bottom: 20px; color: var(--dark);">البنيان المرصوص بغداد الرصافه</h2>
             <div class="form-group">
                 <label>رمز الدخول</label>
                 <input type="password" id="login-code" class="form-control" placeholder="أدخل الرمز هنا...">
             </div>
             <button onclick="handleLogin()" class="btn btn-primary" style="width: 100%; justify-content: center;">تسجيل الدخول</button>
             <p style="margin-top: 15px; font-size: 12px; color: gray;">
-                للتجربة: رمز الأدمن (admin) <br> رمز مخول تجريبي (1234)
+                للتجربة: رمز الأدمن (admin)
             </p>
         </div>
     </div>
 
     <div id="main-app" class="hidden">
         <div class="navbar">
-            <div class="logo"><i class="fas fa-hand-holding-heart"></i> نظام التبرعات</div>
+            <div class="logo"><i class="fas fa-mosque"></i> البنيان المرصوص بغداد الرصافه</div>
             <div>
                 <span id="user-display-name" style="margin-left: 10px; font-weight: bold;"></span>
                 <button onclick="logout()" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">خروج</button>
@@ -87,12 +38,17 @@
             
             <div id="agent-view" class="hidden">
                 <div class="card" style="background: var(--light); border: 1px solid var(--primary);">
-                    <h3><i class="fas fa-book"></i> معلومات الدفتر الحالي</h3>
-                    <div style="display: flex; gap: 20px; margin-top: 10px; flex-wrap: wrap;">
-                        <div>
-                            <span>عدد الدفاتر المستلمة هذا الشهر:</span>
-                            <strong id="agent-books-count">0</strong>
+                    <h3><i class="fas fa-book"></i> معلومات الدفتر</h3>
+                    
+                    <div style="margin-top: 15px; display: flex; align-items: end; gap: 10px;">
+                        <div class="form-group" style="margin-bottom: 0; flex-grow: 1;">
+                            <label>عدد الدفاتر المستلمة:</label>
+                            <input type="number" id="agent-books-input" class="form-control" placeholder="أدخل العدد">
                         </div>
+                        <button onclick="saveAgentBooks()" class="btn btn-primary">حفظ العدد</button>
+                    </div>
+
+                    <div style="display: flex; gap: 20px; margin-top: 15px; flex-wrap: wrap;">
                         <div>
                             <span>عدد الوصولات المدخلة:</span>
                             <strong id="agent-receipts-count">0</strong>
@@ -101,8 +57,8 @@
                 </div>
 
                 <div class="card">
-                    <h3><i class="fas fa-plus-circle"></i> إضافة وصل جديد</h3>
-                    <div class="grid-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
+                    <h3 id="form-title"><i class="fas fa-plus-circle"></i> إضافة وصل جديد</h3>
+                    <input type="hidden" id="edit-receipt-id"> <div class="grid-form" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px;">
                         
                         <div class="form-group">
                             <label>رقم بداية الدفتر (للتوليد التلقائي)</label>
@@ -144,7 +100,8 @@
                         <input type="text" id="notes" class="form-control">
                     </div>
                     
-                    <button onclick="addReceipt()" class="btn btn-primary" style="width: 100%; justify-content: center;">حفظ الوصل</button>
+                    <button onclick="addOrUpdateReceipt()" id="save-btn" class="btn btn-primary" style="width: 100%; justify-content: center;">حفظ الوصل</button>
+                    <button onclick="cancelEdit()" id="cancel-edit-btn" class="btn btn-warning hidden" style="width: 100%; justify-content: center; margin-top: 5px;">إلغاء التعديل</button>
                 </div>
 
                 <div class="card">
@@ -160,7 +117,6 @@
                                     <th>اسم المساهم</th>
                                     <th>المبلغ</th>
                                     <th>التاريخ</th>
-                                    <th>القاطع</th>
                                     <th>ملاحظات</th>
                                     <th>إجراءات</th>
                                 </tr>
@@ -194,15 +150,36 @@
 
                 <div class="card">
                     <h3><i class="fas fa-tools"></i> لوحة التحكم</h3>
-                    <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
-                        <input type="text" id="admin-search" class="form-control" placeholder="بحث (اسم المساهم أو رقم الوصل)..." style="width: 250px;" onkeyup="renderAdminTable()">
+                    <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; align-items: center;">
+                        <input type="text" id="admin-search" class="form-control" placeholder="بحث..." style="width: 200px;" onkeyup="renderAdminTable()">
                         
-                        <select id="admin-filter-agent" class="form-control" style="width: 200px;" onchange="renderAdminTable()">
+                        <select id="admin-filter-agent" class="form-control" style="width: 150px;" onchange="renderAdminTable()">
                             <option value="all">كل المخولين</option>
-                            </select>
+                        </select>
                         
                         <button onclick="exportAllData()" class="btn btn-warning"><i class="fas fa-file-excel"></i> تصدير الكل</button>
                         <button onclick="toggleAgentModal()" class="btn btn-primary"><i class="fas fa-user-plus"></i> إضافة مخول</button>
+                        
+                        <button onclick="clearAllData()" class="btn btn-danger"><i class="fas fa-trash-alt"></i> تفريغ البيانات</button>
+                        <button onclick="toggleGlobalLock()" id="global-lock-btn" class="btn btn-dark"><i class="fas fa-lock"></i> قفل عام</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>إدارة المخولين (القفل والفتح)</h3>
+                    <div class="table-responsive">
+                        <table id="users-control-table">
+                            <thead>
+                                <tr>
+                                    <th>اسم المخول</th>
+                                    <th>رقم الهاتف</th>
+                                    <th>العنوان/الدائرة</th>
+                                    <th>الحالة</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -235,315 +212,31 @@
         <div class="card" style="width: 400px; position: relative;">
             <button onclick="toggleAgentModal()" style="position: absolute; left: 15px; top: 15px; background: none; border: none; font-size: 20px;">&times;</button>
             <h3>إضافة مخول جديد</h3>
+            
             <div class="form-group">
                 <label>اسم المخول</label>
                 <input type="text" id="new-agent-name" class="form-control">
             </div>
+
+            <div class="form-group">
+                <label>رقم الهاتف</label>
+                <input type="text" id="new-agent-phone" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label>الدائرة أو العنوان</label>
+                <input type="text" id="new-agent-address" class="form-control">
+            </div>
+
             <div class="form-group">
                 <label>رمز الدخول</label>
                 <input type="text" id="new-agent-code" class="form-control">
             </div>
-            <div class="form-group">
-                <label>عدد الدفاتر المستلمة</label>
-                <input type="number" id="new-agent-books" class="form-control" value="0">
-            </div>
+
             <button onclick="createNewAgent()" class="btn btn-primary" style="width: 100%;">حفظ</button>
         </div>
     </div>
 
-    <script>
-        // --- 1. إدارة البيانات (Data Management) ---
-        
-        // بيانات افتراضية للبدء
-        const defaultData = {
-            currentUser: null,
-            users: [
-                { id: 1, name: "الإدارة العامة", code: "admin", role: "admin", booksCount: 0 },
-                { id: 2, name: "محمد علي", code: "1234", role: "agent", booksCount: 5 }
-            ],
-            receipts: []
-        };
-
-        // تحميل البيانات من الذاكرة المحلية
-        let appData = JSON.parse(localStorage.getItem('charityApp_v1')) || defaultData;
-
-        function saveData() {
-            localStorage.setItem('charityApp_v1', JSON.stringify(appData));
-        }
-
-        // --- 2. إدارة الدخول (Authentication) ---
-
-        function handleLogin() {
-            const code = document.getElementById('login-code').value;
-            const user = appData.users.find(u => u.code === code);
-
-            if (user) {
-                appData.currentUser = user;
-                document.getElementById('login-screen').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
-                document.getElementById('user-display-name').textContent = user.name;
-                
-                // توجيه حسب الدور
-                if (user.role === 'admin') {
-                    initAdminView();
-                } else {
-                    initAgentView();
-                }
-            } else {
-                alert('الرمز غير صحيح!');
-            }
-        }
-
-        function logout() {
-            appData.currentUser = null;
-            location.reload();
-        }
-
-        // --- 3. منطق المخول (Agent Logic) ---
-
-        function initAgentView() {
-            document.getElementById('agent-view').classList.remove('hidden');
-            document.getElementById('admin-view').classList.add('hidden');
-            document.getElementById('date').valueAsDate = new Date(); // التاريخ الحالي
-            document.getElementById('agent-books-count').innerText = appData.currentUser.booksCount;
-            
-            renderAgentTable();
-            updateReceiptNumber(); // حساب رقم الوصل التالي
-        }
-
-        function updateReceiptNumber() {
-            // منطق: البحث عن آخر رقم وصل لهذا المخول وإضافة 1، أو استخدام رقم البداية
-            const startNum = parseInt(document.getElementById('start-receipt-num').value) || 0;
-            const myReceipts = appData.receipts.filter(r => r.userId === appData.currentUser.id);
-            
-            // ترتيب الوصولات لمعرفة آخر رقم
-            myReceipts.sort((a, b) => a.receiptNum - b.receiptNum);
-            
-            if (myReceipts.length > 0) {
-                const lastNum = myReceipts[myReceipts.length - 1].receiptNum;
-                // إذا كان المستخدم أدخل رقم بداية جديد أكبر من آخر وصل، نعتمد عليه
-                if (startNum > lastNum) {
-                    document.getElementById('receipt-num').value = startNum;
-                } else {
-                    document.getElementById('receipt-num').value = lastNum + 1;
-                }
-            } else {
-                document.getElementById('receipt-num').value = startNum > 0 ? startNum : 1;
-            }
-        }
-
-        function addReceipt() {
-            const receiptNum = document.getElementById('receipt-num').value;
-            const donorName = document.getElementById('donor-name').value;
-            const amount = document.getElementById('amount').value;
-            const date = document.getElementById('date').value;
-            const sector = document.getElementById('sector').value;
-            const notes = document.getElementById('notes').value;
-
-            if (!donorName || !amount || !receiptNum) {
-                alert('يرجى ملء البيانات الأساسية');
-                return;
-            }
-
-            // التحقق من تكرار رقم الوصل
-            if(appData.receipts.some(r => r.receiptNum == receiptNum)) {
-                alert('رقم الوصل مكرر! يرجى التأكد.');
-                return;
-            }
-
-            const newReceipt = {
-                id: Date.now(),
-                userId: appData.currentUser.id,
-                userName: appData.currentUser.name,
-                receiptNum: parseInt(receiptNum),
-                donorName,
-                amount: parseFloat(amount),
-                date,
-                sector,
-                notes,
-                entryDate: new Date().toLocaleString('ar-IQ')
-            };
-
-            appData.receipts.push(newReceipt);
-            saveData();
-            
-            // تنظيف الحقول وتحديث الجدول
-            document.getElementById('donor-name').value = '';
-            document.getElementById('amount').value = '';
-            document.getElementById('notes').value = '';
-            
-            renderAgentTable();
-            updateReceiptNumber(); // تجهيز الرقم التالي
-            alert('تمت الإضافة بنجاح');
-        }
-
-        function renderAgentTable() {
-            const tbody = document.querySelector('#agent-table tbody');
-            tbody.innerHTML = '';
-            
-            const myReceipts = appData.receipts.filter(r => r.userId === appData.currentUser.id);
-            document.getElementById('agent-receipts-count').innerText = myReceipts.length;
-
-            // ترتيب تنازلي (الأحدث فوق)
-            myReceipts.sort((a, b) => b.receiptNum - a.receiptNum).forEach(r => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${r.receiptNum}</td>
-                    <td>${r.donorName}</td>
-                    <td>${r.amount.toLocaleString()}</td>
-                    <td>${r.date}</td>
-                    <td>${r.sector}</td>
-                    <td>${r.notes}</td>
-                    <td>
-                        <button onclick="deleteReceipt(${r.id})" class="btn btn-danger" style="padding: 5px;"><i class="fas fa-trash"></i></button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function deleteReceipt(id) {
-            if(confirm('هل أنت متأكد من الحذف؟')) {
-                appData.receipts = appData.receipts.filter(r => r.id !== id);
-                saveData();
-                renderAgentTable();
-                updateReceiptNumber();
-                if(appData.currentUser.role === 'admin') renderAdminTable();
-            }
-        }
-
-        function exportAgentData() {
-            const myReceipts = appData.receipts.filter(r => r.userId === appData.currentUser.id);
-            if(myReceipts.length === 0) { alert('لا توجد بيانات للتصدير'); return; }
-
-            // تجهيز البيانات للإكسل
-            const dataToExport = myReceipts.map(r => ({
-                "رقم الوصل": r.receiptNum,
-                "اسم المساهم": r.donorName,
-                "المبلغ": r.amount,
-                "التاريخ": r.date,
-                "القاطع": r.sector,
-                "الملاحظات": r.notes
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(dataToExport);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "الوصولات");
-            XLSX.writeFile(wb, `وصولات_${appData.currentUser.name}.xlsx`);
-        }
-
-        // --- 4. منطق المدير (Admin Logic) ---
-
-        function initAdminView() {
-            document.getElementById('agent-view').classList.add('hidden');
-            document.getElementById('admin-view').classList.remove('hidden');
-            
-            updateAdminStats();
-            populateAgentFilter();
-            renderAdminTable();
-        }
-
-        function updateAdminStats() {
-            const totalAmount = appData.receipts.reduce((sum, r) => sum + r.amount, 0);
-            const agentCount = appData.users.filter(u => u.role === 'agent').length;
-
-            document.getElementById('total-amount').innerText = totalAmount.toLocaleString() + ' د.ع';
-            document.getElementById('total-percentage').innerText = (totalAmount * 0.10).toLocaleString() + ' د.ع';
-            document.getElementById('total-agents').innerText = agentCount;
-            document.getElementById('total-receipts').innerText = appData.receipts.length;
-        }
-
-        function populateAgentFilter() {
-            const select = document.getElementById('admin-filter-agent');
-            select.innerHTML = '<option value="all">كل المخولين</option>';
-            appData.users.filter(u => u.role === 'agent').forEach(u => {
-                const opt = document.createElement('option');
-                opt.value = u.id;
-                opt.textContent = u.name;
-                select.appendChild(opt);
-            });
-        }
-
-        function renderAdminTable() {
-            const tbody = document.querySelector('#admin-table tbody');
-            tbody.innerHTML = '';
-
-            const searchTerm = document.getElementById('admin-search').value.toLowerCase();
-            const filterAgent = document.getElementById('admin-filter-agent').value;
-
-            let filteredReceipts = appData.receipts.filter(r => {
-                const matchesSearch = r.donorName.toLowerCase().includes(searchTerm) || r.receiptNum.toString().includes(searchTerm);
-                const matchesAgent = filterAgent === 'all' || r.userId == filterAgent;
-                return matchesSearch && matchesAgent;
-            });
-
-            filteredReceipts.forEach(r => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${r.receiptNum}</td>
-                    <td>${r.userName}</td>
-                    <td>${r.donorName}</td>
-                    <td>${r.amount.toLocaleString()}</td>
-                    <td style="color: var(--danger); font-weight:bold;">${(r.amount * 0.10).toLocaleString()}</td>
-                    <td>${r.date}</td>
-                    <td><small>${r.entryDate}</small></td>
-                    <td>
-                        <button onclick="deleteReceipt(${r.id})" class="btn btn-danger" style="padding: 2px 8px; font-size: 10px;">حذف</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function toggleAgentModal() {
-            const modal = document.getElementById('agent-modal');
-            modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
-        }
-
-        function createNewAgent() {
-            const name = document.getElementById('new-agent-name').value;
-            const code = document.getElementById('new-agent-code').value;
-            const books = document.getElementById('new-agent-books').value;
-
-            if(!name || !code) { alert('يرجى ملء البيانات'); return; }
-            if(appData.users.some(u => u.code === code)) { alert('الرمز مستخدم مسبقاً'); return; }
-
-            appData.users.push({
-                id: Date.now(),
-                name: name,
-                code: code,
-                role: 'agent',
-                booksCount: books
-            });
-            saveData();
-            toggleAgentModal();
-            populateAgentFilter();
-            updateAdminStats();
-            alert('تمت إضافة المخول بنجاح');
-        }
-
-        function exportAllData() {
-            // بيانات للإكسل الشامل
-            const dataToExport = appData.receipts.map(r => ({
-                "اسم المخول": r.userName,
-                "رقم الوصل": r.receiptNum,
-                "اسم المساهم": r.donorName,
-                "المبلغ": r.amount,
-                "النسبة (10%)": r.amount * 0.10,
-                "التاريخ": r.date,
-                "القاطع": r.sector,
-                "تاريخ الإدخال للنظام": r.entryDate
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(dataToExport);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "كل البيانات");
-            XLSX.writeFile(wb, `تقرير_شامل_${new Date().toISOString().slice(0,10)}.xlsx`);
-        }
-
-        // إخفاء الـ Modal عند البدء
-        document.getElementById('agent-modal').style.display = 'none';
-
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
