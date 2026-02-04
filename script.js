@@ -423,7 +423,7 @@ function updateGlobalLockButton() {
 // --- إضافة مخول (محدث) ---
 function toggleAgentModal() {
     const modal = document.getElementById('agent-modal');
-    modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
+    modal.classList.toggle('hidden');
 }
 
 function createNewAgent() {
@@ -476,6 +476,3 @@ function exportAllData() {
     XLSX.utils.book_append_sheet(wb, ws, "كل البيانات");
     XLSX.writeFile(wb, `تقرير_شامل_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
-
-// إخفاء الـ Modal عند البدء
-document.getElementById('agent-modal').style.display = 'none';
