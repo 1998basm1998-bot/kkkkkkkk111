@@ -129,8 +129,9 @@ function addOrUpdateReceipt() {
     const sector = document.getElementById('sector').value;
     const notes = document.getElementById('notes').value;
 
-    if (!donorName || !amount || !receiptNum) {
-        alert('يرجى ملء البيانات الأساسية');
+    // تعديل: جعل كل الحقول إجبارية عدا الملاحظات
+    if (!donorName || !amount || !receiptNum || !date || !sector) {
+        alert('يرجى ملء جميع الحقول المطلوبة (الاسم، المبلغ، التاريخ، القاطع)');
         return;
     }
 
@@ -316,7 +317,6 @@ function renderAdminTable() {
     const filterAgent = document.getElementById('admin-filter-agent').value;
 
     let filteredReceipts = appData.receipts.filter(r => {
-        // نحصل على اسم المخول المحدث من مصفوفة المستخدمين
         const agentUser = appData.users.find(u => u.id === r.userId);
         const agentName = agentUser ? agentUser.name : r.userName;
 
@@ -333,12 +333,12 @@ function renderAdminTable() {
         const agentName = agentUser ? agentUser.name : r.userName;
 
         const tr = document.createElement('tr');
+        // تعديل: حذف خلية الـ 10%
         tr.innerHTML = `
             <td>${r.receiptNum}</td>
             <td>${agentName}</td>
             <td>${r.donorName}</td>
             <td>${r.amount.toLocaleString()}</td>
-            <td style="color: var(--danger); font-weight:bold;">${(r.amount * 0.10).toLocaleString()}</td>
             <td>${r.date}</td>
             <td><small>${r.entryDate}</small></td>
             <td>
@@ -352,14 +352,10 @@ function renderAdminTable() {
 // --- جديد: تفريغ البيانات ---
 function clearAllData() {
     if(confirm('تحذير خطير: سيتم حذف جميع الوصولات لكل المخولين وتصفير عداد الدفاتر، ولكن سيبقى حساب المخول كما هو. هل أنت متأكد؟')) {
-        // 1. تفريغ مصفوفة الوصولات
         appData.receipts = [];
-        
-        // 2. تصفير حقل عدد الدفاتر لكل المستخدمين
         appData.users.forEach(u => {
-            u.booksCount = 0; // تصفير العداد
+            u.booksCount = 0; 
         });
-
         saveData();
         updateAdminStats();
         renderAdminTable();
@@ -367,7 +363,7 @@ function clearAllData() {
     }
 }
 
-// --- جديد: جدول التحكم بالمستخدمين (القفل) ---
+// --- جديد: جدول التحكم بالمستخدمين (القفل والتعديل والحذف) ---
 function renderUsersControlTable() {
     const tbody = document.querySelector('#users-control-table tbody');
     tbody.innerHTML = '';
@@ -382,9 +378,17 @@ function renderUsersControlTable() {
                 ${u.locked ? '<span style="color:red; font-weight:bold;">مقفول</span>' : '<span style="color:green;">نشط</span>'}
             </td>
             <td>
-                <button onclick="toggleUserLock(${u.id})" class="btn ${u.locked ? 'btn-primary' : 'btn-danger'}" style="padding: 5px 10px; font-size: 12px;">
-                    ${u.locked ? '<i class="fas fa-unlock"></i> فتح' : '<i class="fas fa-lock"></i> قفل'}
-                </button>
+                <div style="display: flex; gap: 5px;">
+                    <button onclick="toggleUserLock(${u.id})" class="btn ${u.locked ? 'btn-primary' : 'btn-danger'}" style="padding: 5px 10px; font-size: 11px;">
+                        ${u.locked ? '<i class="fas fa-unlock"></i>' : '<i class="fas fa-lock"></i>'}
+                    </button>
+                    <button onclick="prepareEditAgent(${u.id})" class="btn btn-warning" style="padding: 5px 10px; font-size: 11px;">
+                        <i class="fas fa-user-edit"></i>
+                    </button>
+                    <button onclick="deleteAgent(${u.id})" class="btn btn-danger" style="padding: 5px 10px; font-size: 11px;">
+                        <i class="fas fa-user-minus"></i>
+                    </button>
+                </div>
             </td>
         `;
         tbody.appendChild(tr);
@@ -394,10 +398,82 @@ function renderUsersControlTable() {
 function toggleUserLock(userId) {
     const user = appData.users.find(u => u.id === userId);
     if(user) {
-        user.locked = !user.locked; // عكس الحالة
+        user.locked = !user.locked; 
         saveData();
         renderUsersControlTable();
     }
+}
+
+// --- وظائف إدارة المخولين (تعديل وحذف) ---
+function prepareEditAgent(userId) {
+    const user = appData.users.find(u => u.id === userId);
+    if (!user) return;
+    
+    document.getElementById('edit-agent-id').value = user.id;
+    document.getElementById('new-agent-name').value = user.name;
+    document.getElementById('new-agent-phone').value = user.phone;
+    document.getElementById('new-agent-address').value = user.address;
+    document.getElementById('new-agent-code').value = user.code;
+    
+    document.getElementById('agent-modal-title').innerText = "تعديل بيانات المخول";
+    toggleAgentModal();
+}
+
+function deleteAgent(userId) {
+    if(confirm('هل أنت متأكد من حذف هذا المخول نهائياً؟ سيتم حذف حسابه فقط ولن تُحذف وصولاته المسجلة سابقاً باسمه.')) {
+        appData.users = appData.users.filter(u => u.id !== userId);
+        saveData();
+        renderUsersControlTable();
+        populateAgentFilter();
+        updateAdminStats();
+    }
+}
+
+function saveAgentProcess() {
+    const editId = document.getElementById('edit-agent-id').value;
+    const name = document.getElementById('new-agent-name').value;
+    const phone = document.getElementById('new-agent-phone').value;
+    const address = document.getElementById('new-agent-address').value;
+    const code = document.getElementById('new-agent-code').value;
+
+    if(!name || !code) { alert('الاسم والرمز حقول إجبارية'); return; }
+
+    if (editId) {
+        // تحديث مخول موجود
+        const index = appData.users.findIndex(u => u.id == editId);
+        if (index !== -1) {
+            // التأكد من أن الرمز الجديد غير مستخدم من شخص آخر
+            if(appData.users.some(u => u.code === code && u.id != editId)) {
+                alert('الرمز مستخدم مسبقاً من مخول آخر');
+                return;
+            }
+            appData.users[index].name = name;
+            appData.users[index].phone = phone;
+            appData.users[index].address = address;
+            appData.users[index].code = code;
+            alert('تم التعديل بنجاح');
+        }
+    } else {
+        // إضافة مخول جديد
+        if(appData.users.some(u => u.code === code)) { alert('الرمز مستخدم مسبقاً'); return; }
+        appData.users.push({
+            id: Date.now(),
+            name: name,
+            phone: phone,
+            address: address,
+            code: code,
+            role: 'agent',
+            booksCount: 0,
+            locked: false
+        });
+        alert('تمت إضافة المخول بنجاح');
+    }
+    
+    saveData();
+    toggleAgentModal();
+    populateAgentFilter();
+    updateAdminStats();
+    renderUsersControlTable();
 }
 
 // --- جديد: القفل العام ---
@@ -420,40 +496,67 @@ function updateGlobalLockButton() {
     }
 }
 
-// --- إضافة مخول (محدث) ---
 function toggleAgentModal() {
     const modal = document.getElementById('agent-modal');
     modal.classList.toggle('hidden');
+    if(modal.classList.contains('hidden')) {
+        // تصفير الحقول عند الإغلاق
+        document.getElementById('edit-agent-id').value = '';
+        document.getElementById('new-agent-name').value = '';
+        document.getElementById('new-agent-phone').value = '';
+        document.getElementById('new-agent-address').value = '';
+        document.getElementById('new-agent-code').value = '';
+        document.getElementById('agent-modal-title').innerText = "إضافة مخول جديد";
+    }
 }
 
-function createNewAgent() {
-    const name = document.getElementById('new-agent-name').value;
-    const phone = document.getElementById('new-agent-phone').value;
-    const address = document.getElementById('new-agent-address').value;
-    const code = document.getElementById('new-agent-code').value;
+// --- جديد: وظائف ملخص مبالغ المخولين ---
+function toggleAgentsSummaryModal() {
+    const modal = document.getElementById('agents-summary-modal');
+    modal.classList.toggle('hidden');
+    if (!modal.classList.contains('hidden')) {
+        renderAgentsSummary();
+    }
+}
 
-    if(!name || !code) { alert('الاسم والرمز حقول إجبارية'); return; }
-    if(appData.users.some(u => u.code === code)) { alert('الرمز مستخدم مسبقاً'); return; }
-
-    appData.users.push({
-        id: Date.now(),
-        name: name,
-        phone: phone,
-        address: address,
-        code: code,
-        role: 'agent',
-        booksCount: 0,
-        locked: false
+function renderAgentsSummary() {
+    const tbody = document.querySelector('#agents-summary-table tbody');
+    tbody.innerHTML = '';
+    
+    appData.users.filter(u => u.role === 'agent').forEach(u => {
+        const userReceipts = appData.receipts.filter(r => r.userId === u.id);
+        const totalAmount = userReceipts.reduce((sum, r) => sum + r.amount, 0);
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${u.name}</td>
+            <td>${u.address || '-'}</td>
+            <td style="font-weight:bold;">${totalAmount.toLocaleString()} د.ع</td>
+            <td style="color:var(--danger); font-weight:bold;">${(totalAmount * 0.10).toLocaleString()} د.ع</td>
+            <td>${userReceipts.length}</td>
+        `;
+        tbody.appendChild(tr);
     });
-    saveData();
-    toggleAgentModal();
-    
-    // تحديث الجداول
-    populateAgentFilter();
-    updateAdminStats();
-    renderUsersControlTable();
-    
-    alert('تمت إضافة المخول بنجاح');
+}
+
+function exportAgentsSummary() {
+    const dataToExport = appData.users.filter(u => u.role === 'agent').map(u => {
+        const userReceipts = appData.receipts.filter(r => r.userId === u.id);
+        const totalAmount = userReceipts.reduce((sum, r) => sum + r.amount, 0);
+        return {
+            "اسم المخول": u.name,
+            "العنوان/الدائرة": u.address || '-',
+            "رقم الهاتف": u.phone || '-',
+            "المبلغ الكلي": totalAmount,
+            "النسبة الكلية (10%)": totalAmount * 0.10,
+            "عدد الوصولات": userReceipts.length
+        };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "ملخص المخولين");
+    XLSX.writeFile(wb, `ملخص_المبالغ_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 function exportAllData() {
@@ -464,7 +567,6 @@ function exportAllData() {
             "رقم الوصل": r.receiptNum,
             "اسم المساهم": r.donorName,
             "المبلغ": r.amount,
-            "النسبة (10%)": r.amount * 0.10,
             "التاريخ": r.date,
             "القاطع": r.sector,
             "تاريخ الإدخال للنظام": r.entryDate
