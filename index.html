@@ -88,6 +88,7 @@
                         <div class="form-group">
                             <label>القاطع</label>
                             <select id="sector" class="form-control">
+                                <option value="">اختر القاطع...</option>
                                 <option value="جنوب 1">جنوب 1</option>
                                 <option value="جنوب 2">جنوب 2</option>
                                 <option value="شمال">شمال</option>
@@ -96,7 +97,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>ملاحظات</label>
+                        <label>ملاحظات (اختياري)</label>
                         <input type="text" id="notes" class="form-control">
                     </div>
                     
@@ -159,6 +160,7 @@
                         
                         <button onclick="exportAllData()" class="btn btn-warning"><i class="fas fa-file-excel"></i> تصدير الكل</button>
                         <button onclick="toggleAgentModal()" class="btn btn-primary"><i class="fas fa-user-plus"></i> إضافة مخول</button>
+                        <button onclick="toggleAgentsSummaryModal()" class="btn btn-dark"><i class="fas fa-users-cog"></i> ملخص مبالغ المخولين</button>
                         
                         <button onclick="clearAllData()" class="btn btn-danger"><i class="fas fa-trash-alt"></i> تفريغ البيانات</button>
                         <button onclick="toggleGlobalLock()" id="global-lock-btn" class="btn btn-dark"><i class="fas fa-lock"></i> قفل عام</button>
@@ -166,7 +168,7 @@
                 </div>
 
                 <div class="card">
-                    <h3>إدارة المخولين (القفل والفتح)</h3>
+                    <h3>إدارة المخولين (تحكم بالحسابات)</h3>
                     <div class="table-responsive">
                         <table id="users-control-table">
                             <thead>
@@ -175,7 +177,7 @@
                                     <th>رقم الهاتف</th>
                                     <th>العنوان/الدائرة</th>
                                     <th>الحالة</th>
-                                    <th>إجراءات</th>
+                                    <th>إجراءات الحساب</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -193,7 +195,6 @@
                                     <th>اسم المخول</th>
                                     <th>اسم المساهم</th>
                                     <th>المبلغ</th>
-                                    <th>النسبة (10%)</th>
                                     <th>التاريخ</th>
                                     <th>تاريخ الإدخال</th>
                                     <th>إجراءات</th>
@@ -211,7 +212,8 @@
     <div id="agent-modal" class="hidden" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 200; display: flex; justify-content: center; align-items: center;">
         <div class="card" style="width: 400px; position: relative;">
             <button onclick="toggleAgentModal()" style="position: absolute; left: 15px; top: 15px; background: none; border: none; font-size: 20px;">&times;</button>
-            <h3>إضافة مخول جديد</h3>
+            <h3 id="agent-modal-title">إضافة مخول جديد</h3>
+            <input type="hidden" id="edit-agent-id">
             
             <div class="form-group">
                 <label>اسم المخول</label>
@@ -233,7 +235,31 @@
                 <input type="text" id="new-agent-code" class="form-control">
             </div>
 
-            <button onclick="createNewAgent()" class="btn btn-primary" style="width: 100%;">حفظ</button>
+            <button onclick="saveAgentProcess()" class="btn btn-primary" style="width: 100%;">حفظ البيانات</button>
+        </div>
+    </div>
+
+    <div id="agents-summary-modal" class="hidden" style="position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.5); z-index: 150; display: flex; justify-content: center; align-items: center;">
+        <div class="card" style="width: 90%; max-width: 900px; max-height: 80vh; overflow-y: auto; position: relative;">
+            <button onclick="toggleAgentsSummaryModal()" style="position: absolute; left: 15px; top: 15px; background: none; border: none; font-size: 20px;">&times;</button>
+            <h3><i class="fas fa-list-alt"></i> ملخص مبالغ ونسب المخولين</h3>
+            <div style="margin: 15px 0;">
+                <button onclick="exportAgentsSummary()" class="btn btn-warning"><i class="fas fa-file-excel"></i> تصدير الملخص إكسل</button>
+            </div>
+            <div class="table-responsive">
+                <table id="agents-summary-table">
+                    <thead>
+                        <tr>
+                            <th>اسم المخول</th>
+                            <th>العنوان / الدائرة</th>
+                            <th>المبلغ الكلي</th>
+                            <th>النسبة الكلية (10%)</th>
+                            <th>عدد الوصولات</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
