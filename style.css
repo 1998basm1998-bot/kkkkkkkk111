@@ -1,0 +1,49 @@
+:root {
+    --primary: #10b981; /* لون أخضر خيري */
+    --dark: #064e3b;
+    --light: #ecfdf5;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --text: #1f2937;
+    --bg: #f3f4f6;
+    --locked: #6b7280; /* لون رمادي للقفل */
+}
+
+* { box-sizing: border-box; font-family: 'Cairo', sans-serif; margin: 0; padding: 0; }
+body { background-color: var(--bg); color: var(--text); padding-bottom: 50px; }
+
+/* تنسيقات عامة */
+.container { max-width: 1200px; margin: 0 auto; padding: 15px; }
+.hidden { display: none !important; }
+.card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
+.btn { cursor: pointer; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-warning { background: var(--warning); color: black; }
+.btn-dark { background: #374151; color: white; } /* زر جديد */
+.btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+.form-control { width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 16px; }
+.form-control:focus { outline: 2px solid var(--primary); border-color: transparent; }
+
+/* شاشة الدخول */
+#login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--dark), var(--primary)); }
+.login-box { width: 100%; max-width: 400px; background: white; padding: 30px; border-radius: 20px; text-align: center; }
+
+/* الجداول */
+.table-responsive { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; margin-top: 10px; min-width: 800px; }
+th, td { padding: 12px; text-align: right; border-bottom: 1px solid #e5e7eb; }
+th { background-color: var(--light); color: var(--dark); }
+
+/* الإحصائيات */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+.stat-card { background: white; padding: 20px; border-radius: 10px; border-right: 4px solid var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.stat-value { font-size: 24px; font-weight: bold; color: var(--dark); }
+.stat-label { color: #6b7280; font-size: 14px; }
+
+/* Navbar */
+.navbar { background: white; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+.logo { font-weight: bold; color: var(--primary); font-size: 1.2rem; }
