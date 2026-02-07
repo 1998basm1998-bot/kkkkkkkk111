@@ -90,32 +90,75 @@ function initAgentView() {
     updateReceiptNumber(); 
 }
 
-// حفظ عدد الدفاتر للمخول
-function saveAgentBooks() {
-    const count = document.getElementById('agent-books-input').value;
+// --- منطق حفظ الدفاتر الجديد (محمي برمز) ---
+function checkBookSave() {
+    const userInDB = appData.users.find(u => u.id === appData.currentUser.id);
+    const newCount = document.getElementById('agent-books-input').value;
+
+    // إذا كان هناك قيمة محفوظة سابقاً (أكبر من 0)، اطلب الرمز للتعديل
+    if (userInDB.booksCount && userInDB.booksCount > 0) {
+        document.getElementById('pin-modal').classList.remove('hidden');
+        document.getElementById('book-edit-pin').value = ''; // تصفير الحقل
+        document.getElementById('book-edit-pin').focus();
+    } else {
+        // إذا كانت المرة الأولى، احفظ مباشرة
+        saveAgentBooksFunc(newCount);
+    }
+}
+
+function verifyBookPin() {
+    const pin = document.getElementById('book-edit-pin').value;
+    if (pin === '1001') {
+        const newCount = document.getElementById('agent-books-input').value;
+        saveAgentBooksFunc(newCount);
+        closePinModal();
+    } else {
+        alert('رمز خاطئ!');
+    }
+}
+
+function closePinModal() {
+    document.getElementById('pin-modal').classList.add('hidden');
+    // إعادة القيمة الأصلية إذا ألغى العملية
+    const userInDB = appData.users.find(u => u.id === appData.currentUser.id);
+    document.getElementById('agent-books-input').value = userInDB.booksCount || "";
+}
+
+function saveAgentBooksFunc(count) {
     const userIndex = appData.users.findIndex(u => u.id === appData.currentUser.id);
     if (userIndex !== -1) {
         appData.users[userIndex].booksCount = count;
         saveData();
-        alert('تم حفظ عدد الدفاتر.');
+        alert('تم حفظ عدد الدفاتر بنجاح.');
     }
 }
 
 function updateReceiptNumber() {
     const startNum = parseInt(document.getElementById('start-receipt-num').value) || 0;
-    const myReceipts = appData.receipts.filter(r => r.userId === appData.currentUser.id);
+    const currentVal = document.getElementById('receipt-num').value;
+
+    // إذا كان المستخدم قد كتب شيئاً يدوياً، لا نقوم بتغييره تلقائياً إلا إذا كان الحقل فارغاً
+    // أو إذا أردنا التحديث التلقائي بناءً على البداية فقط عند التحميل الأول
     
+    const myReceipts = appData.receipts.filter(r => r.userId === appData.currentUser.id);
     myReceipts.sort((a, b) => a.receiptNum - b.receiptNum);
     
+    let nextNum;
     if (myReceipts.length > 0) {
         const lastNum = myReceipts[myReceipts.length - 1].receiptNum;
         if (startNum > lastNum) {
-            document.getElementById('receipt-num').value = startNum;
+            nextNum = startNum;
         } else {
-            document.getElementById('receipt-num').value = lastNum + 1;
+            nextNum = lastNum + 1;
         }
     } else {
-        document.getElementById('receipt-num').value = startNum > 0 ? startNum : 1;
+        nextNum = startNum > 0 ? startNum : 1;
+    }
+
+    // نضع الرقم المقترح فقط إذا كان الحقل فارغاً لتسهيل الأمر، 
+    // ولكن بما أن المستخدم يريد التحكم، فالحقل مفتوح للتعديل دائماً.
+    if(!currentVal) {
+        document.getElementById('receipt-num').value = nextNum;
     }
 }
 
@@ -175,8 +218,13 @@ function addOrUpdateReceipt() {
         document.getElementById('donor-name').value = '';
         document.getElementById('amount').value = '';
         document.getElementById('notes').value = '';
+        
+        // مسح رقم الوصل ليقوم المستخدم بإدخال الجديد أو الاعتماد على التوليد
+        // سنقوم بزيادة الرقم الحالي وعرضه كتوقع
+        const nextNum = parseInt(receiptNum) + 1;
+        document.getElementById('receipt-num').value = nextNum; 
+        
         alert('تمت الإضافة بنجاح');
-        updateReceiptNumber();
     }
     
     renderAgentTable();
@@ -211,7 +259,12 @@ function cancelEdit() {
     document.getElementById('amount').value = '';
     document.getElementById('notes').value = '';
     
-    updateReceiptNumber();
+    // إعادة التعيين لآخر رقم + 1
+    const myReceipts = appData.receipts.filter(r => r.userId === appData.currentUser.id);
+    if (myReceipts.length > 0) {
+        myReceipts.sort((a, b) => a.receiptNum - b.receiptNum);
+        document.getElementById('receipt-num').value = myReceipts[myReceipts.length - 1].receiptNum + 1;
+    }
 }
 
 function renderAgentTable() {
@@ -248,7 +301,14 @@ function deleteReceipt(id) {
         appData.receipts = appData.receipts.filter(r => r.id !== id);
         saveData();
         renderAgentTable();
-        updateReceiptNumber();
+        
+        // تحديث الرقم التلقائي بعد الحذف
+        const myReceipts = appData.receipts.filter(r => r.userId === appData.currentUser.id);
+        if (myReceipts.length > 0) {
+            myReceipts.sort((a, b) => a.receiptNum - b.receiptNum);
+            document.getElementById('receipt-num').value = myReceipts[myReceipts.length - 1].receiptNum + 1;
+        }
+
         if(appData.currentUser && appData.currentUser.role === 'admin') {
             renderAdminTable();
             updateAdminStats();
