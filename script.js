@@ -56,7 +56,7 @@ function attemptLogin(code, isAuto) {
     // حفظ الرمز للدخول التلقائي
     localStorage.setItem('autoLoginCode', code);
     
-    appData.currentUser = user; // تعيين المستخدم الحالي في الجلسة (بدون حفظه في الداتا بيس)
+    appData.currentUser = user; // تعيين المستخدم الحالي في الجلسة
     
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('main-app').classList.remove('hidden');
@@ -129,7 +129,6 @@ function addOrUpdateReceipt() {
     const sector = document.getElementById('sector').value;
     const notes = document.getElementById('notes').value;
 
-    // تعديل: جعل كل الحقول إجبارية عدا الملاحظات
     if (!donorName || !amount || !receiptNum || !date || !sector) {
         alert('يرجى ملء جميع الحقول المطلوبة (الاسم، المبلغ، التاريخ، القاطع)');
         return;
@@ -152,7 +151,6 @@ function addOrUpdateReceipt() {
         }
     } else {
         // --- وضع الإضافة الجديد ---
-        // التحقق من تكرار رقم الوصل
         if(appData.receipts.some(r => r.receiptNum == receiptNum)) {
             alert('رقم الوصل مكرر! يرجى التأكد.');
             return;
@@ -161,7 +159,7 @@ function addOrUpdateReceipt() {
         const newReceipt = {
             id: Date.now(),
             userId: appData.currentUser.id,
-            userName: appData.currentUser.name, // سيتم تحديث الاسم لاحقاً من كائن المستخدم
+            userName: appData.currentUser.name,
             receiptNum: parseInt(receiptNum),
             donorName,
             amount: parseFloat(amount),
@@ -174,7 +172,6 @@ function addOrUpdateReceipt() {
         appData.receipts.push(newReceipt);
         saveData();
         
-        // تنظيف الحقول
         document.getElementById('donor-name').value = '';
         document.getElementById('amount').value = '';
         document.getElementById('notes').value = '';
@@ -189,7 +186,6 @@ function prepareEdit(id) {
     const receipt = appData.receipts.find(r => r.id === id);
     if (!receipt) return;
 
-    // ملء الحقول بالبيانات القديمة
     document.getElementById('edit-receipt-id').value = receipt.id;
     document.getElementById('receipt-num').value = receipt.receiptNum;
     document.getElementById('donor-name').value = receipt.donorName;
@@ -198,12 +194,10 @@ function prepareEdit(id) {
     document.getElementById('sector').value = receipt.sector;
     document.getElementById('notes').value = receipt.notes;
 
-    // تغيير النصوص والأزرار
     document.getElementById('form-title').innerText = "تعديل الوصل";
     document.getElementById('save-btn').innerText = "حفظ التعديلات";
     document.getElementById('cancel-edit-btn').classList.remove('hidden');
     
-    // الصعود للفورم
     document.getElementById('form-title').scrollIntoView({behavior: 'smooth'});
 }
 
@@ -213,7 +207,6 @@ function cancelEdit() {
     document.getElementById('save-btn').innerText = "حفظ الوصل";
     document.getElementById('cancel-edit-btn').classList.add('hidden');
     
-    // تنظيف الحقول
     document.getElementById('donor-name').value = '';
     document.getElementById('amount').value = '';
     document.getElementById('notes').value = '';
@@ -226,7 +219,11 @@ function renderAgentTable() {
     tbody.innerHTML = '';
     
     const myReceipts = appData.receipts.filter(r => r.userId === appData.currentUser.id);
+    
+    // تحديث الإحصائيات (العدد + المبلغ) للمخول
     document.getElementById('agent-receipts-count').innerText = myReceipts.length;
+    const totalMyAmount = myReceipts.reduce((sum, r) => sum + r.amount, 0);
+    document.getElementById('agent-total-amount').innerText = totalMyAmount.toLocaleString() + ' د.ع';
 
     // ترتيب تنازلي (الأحدث فوق)
     myReceipts.sort((a, b) => b.receiptNum - a.receiptNum).forEach(r => {
@@ -252,7 +249,11 @@ function deleteReceipt(id) {
         saveData();
         renderAgentTable();
         updateReceiptNumber();
-        if(appData.currentUser && appData.currentUser.role === 'admin') renderAdminTable();
+        if(appData.currentUser && appData.currentUser.role === 'admin') {
+            renderAdminTable();
+            updateAdminStats();
+            renderAgentsSummary(); // لتحديث الملخص عند الحذف
+        }
     }
 }
 
@@ -284,7 +285,7 @@ function initAdminView() {
     updateAdminStats();
     populateAgentFilter();
     renderAdminTable();
-    renderUsersControlTable(); // جدول التحكم بالمستخدمين
+    renderUsersControlTable();
     updateGlobalLockButton();
 }
 
@@ -333,7 +334,6 @@ function renderAdminTable() {
         const agentName = agentUser ? agentUser.name : r.userName;
 
         const tr = document.createElement('tr');
-        // تعديل: حذف خلية الـ 10%
         tr.innerHTML = `
             <td>${r.receiptNum}</td>
             <td>${agentName}</td>
@@ -342,11 +342,60 @@ function renderAdminTable() {
             <td>${r.date}</td>
             <td><small>${r.entryDate}</small></td>
             <td>
-                <button onclick="deleteReceipt(${r.id})" class="btn btn-danger" style="padding: 2px 8px; font-size: 10px;">حذف</button>
+                <div style="display:flex; gap:5px;">
+                    <button onclick="prepareAdminEdit(${r.id})" class="btn btn-warning" style="padding: 2px 8px; font-size: 10px;">تعديل</button>
+                    <button onclick="deleteReceipt(${r.id})" class="btn btn-danger" style="padding: 2px 8px; font-size: 10px;">حذف</button>
+                </div>
             </td>
         `;
         tbody.appendChild(tr);
     });
+}
+
+// --- منطق تعديل الوصل من الأدمن ---
+function prepareAdminEdit(id) {
+    const receipt = appData.receipts.find(r => r.id === id);
+    if(!receipt) return;
+
+    document.getElementById('admin-edit-receipt-id').value = receipt.id;
+    document.getElementById('admin-edit-num').value = receipt.receiptNum;
+    document.getElementById('admin-edit-donor').value = receipt.donorName;
+    document.getElementById('admin-edit-amount').value = receipt.amount;
+    document.getElementById('admin-edit-date').value = receipt.date;
+    document.getElementById('admin-edit-sector').value = receipt.sector;
+    document.getElementById('admin-edit-notes').value = receipt.notes;
+
+    document.getElementById('admin-edit-receipt-modal').classList.remove('hidden');
+}
+
+function saveAdminReceiptEdit() {
+    const id = document.getElementById('admin-edit-receipt-id').value;
+    const receiptNum = document.getElementById('admin-edit-num').value;
+    const donorName = document.getElementById('admin-edit-donor').value;
+    const amount = document.getElementById('admin-edit-amount').value;
+    const date = document.getElementById('admin-edit-date').value;
+    const sector = document.getElementById('admin-edit-sector').value;
+    const notes = document.getElementById('admin-edit-notes').value;
+
+    const index = appData.receipts.findIndex(r => r.id == id);
+    if(index !== -1) {
+        appData.receipts[index].receiptNum = parseInt(receiptNum);
+        appData.receipts[index].donorName = donorName;
+        appData.receipts[index].amount = parseFloat(amount);
+        appData.receipts[index].date = date;
+        appData.receipts[index].sector = sector;
+        appData.receipts[index].notes = notes;
+
+        saveData();
+        renderAdminTable();
+        updateAdminStats(); // تحديث الإحصائيات
+        closeAdminEditModal();
+        alert('تم تعديل الوصل بنجاح');
+    }
+}
+
+function closeAdminEditModal() {
+    document.getElementById('admin-edit-receipt-modal').classList.add('hidden');
 }
 
 // --- جديد: تفريغ البيانات ---
@@ -370,9 +419,11 @@ function renderUsersControlTable() {
 
     appData.users.filter(u => u.role === 'agent').forEach(u => {
         const tr = document.createElement('tr');
+        // تمت إضافة عمود عدد الدفاتر
         tr.innerHTML = `
             <td>${u.name}</td>
             <td>${u.phone || '-'}</td>
+            <td><strong style="color:var(--primary); font-size:1.1em;">${u.booksCount || 0}</strong></td>
             <td>${u.address || '-'}</td>
             <td>
                 ${u.locked ? '<span style="color:red; font-weight:bold;">مقفول</span>' : '<span style="color:green;">نشط</span>'}
@@ -439,10 +490,8 @@ function saveAgentProcess() {
     if(!name || !code) { alert('الاسم والرمز حقول إجبارية'); return; }
 
     if (editId) {
-        // تحديث مخول موجود
         const index = appData.users.findIndex(u => u.id == editId);
         if (index !== -1) {
-            // التأكد من أن الرمز الجديد غير مستخدم من شخص آخر
             if(appData.users.some(u => u.code === code && u.id != editId)) {
                 alert('الرمز مستخدم مسبقاً من مخول آخر');
                 return;
@@ -454,7 +503,6 @@ function saveAgentProcess() {
             alert('تم التعديل بنجاح');
         }
     } else {
-        // إضافة مخول جديد
         if(appData.users.some(u => u.code === code)) { alert('الرمز مستخدم مسبقاً'); return; }
         appData.users.push({
             id: Date.now(),
@@ -500,7 +548,6 @@ function toggleAgentModal() {
     const modal = document.getElementById('agent-modal');
     modal.classList.toggle('hidden');
     if(modal.classList.contains('hidden')) {
-        // تصفير الحقول عند الإغلاق
         document.getElementById('edit-agent-id').value = '';
         document.getElementById('new-agent-name').value = '';
         document.getElementById('new-agent-phone').value = '';
@@ -528,12 +575,12 @@ function renderAgentsSummary() {
         const totalAmount = userReceipts.reduce((sum, r) => sum + r.amount, 0);
         
         const tr = document.createElement('tr');
+        // الترتيب الجديد: اسم - عدد - مبلغ - نسبة
         tr.innerHTML = `
             <td>${u.name}</td>
-            <td>${u.address || '-'}</td>
+            <td>${userReceipts.length}</td>
             <td style="font-weight:bold;">${totalAmount.toLocaleString()} د.ع</td>
             <td style="color:var(--danger); font-weight:bold;">${(totalAmount * 0.10).toLocaleString()} د.ع</td>
-            <td>${userReceipts.length}</td>
         `;
         tbody.appendChild(tr);
     });
@@ -545,11 +592,9 @@ function exportAgentsSummary() {
         const totalAmount = userReceipts.reduce((sum, r) => sum + r.amount, 0);
         return {
             "اسم المخول": u.name,
-            "العنوان/الدائرة": u.address || '-',
-            "رقم الهاتف": u.phone || '-',
+            "عدد الوصولات": userReceipts.length,
             "المبلغ الكلي": totalAmount,
-            "النسبة الكلية (10%)": totalAmount * 0.10,
-            "عدد الوصولات": userReceipts.length
+            "النسبة الكلية (10%)": totalAmount * 0.10
         };
     });
 
